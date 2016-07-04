@@ -17,6 +17,7 @@
     "mongo-xlsx": "^1.0.12",
     "mongodb": "^2.1.18",
     "morgan": "~1.7.0",
+    "path": "^0.12.7",
     "serve-favicon": "~2.3.0"
   }
 }

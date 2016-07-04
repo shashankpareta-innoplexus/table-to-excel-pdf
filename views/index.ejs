@@ -1,4 +1,29 @@
-
 <h1>Welcome</h1>
-<p class="lead">This is Home Page.</p>
+<p class="lead">Convert your database into excel files.</p>
+
+<div id="center-div">
+  <form action="to_excel" method="POST">
+    <div class="form-group">
+      <label for="db">Database Name in Mongodb</label><br>
+      <input id="inputentries" type="text" name="db" placeholder="Database" autofocus="autofocus" class="form-control"/>
+    </div><br>
+    <div class="form-group">
+      <label for="collection">Collection Name</label><br>
+      <input id="inputentries" type="text" name="collection" placeholder="Collection" class="form-control"/>
+    </div>
+    <br>
+
+    <button type="submit" class="btn btn-primary">Convert To Excel File</button>
+  </form>
+</div>
+
+<div>
+<% if(isReady) {%>
+<a href="/download/<%=path%>">Download</a>
+<% } %>
+</div>
+
+
+
+
 
