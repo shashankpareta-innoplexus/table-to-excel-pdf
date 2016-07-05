@@ -6,142 +6,157 @@ var mongoxlsx = require('mongo-xlsx');
 var phantom = require('phantom');
 var fs = require('fs');
 
-function convert_to_excel(db, collection, callback){
-	var coll = db.collection(collection);
-	coll.find().toArray(function(err, items){
-		if(err) {console.log("Not Found..........");}
-		if(items.length > 0){
-			for (var i = 0; i < items.length; i++) { 
-				if(items[i].hasOwnProperty("_id")){
-					delete items[i]['_id'];
-				}
-				if(items[i].hasOwnProperty("__v")){
-					delete items[i]['__v'];
-				}
+//Take collection name and collection in form of array as argumnets and convert that array in excel files
+function convert_to_excel(items, collection, callback){
+
+	if(items.length > 0){
+		for (var i = 0; i < items.length; i++) { 
+			if(items[i].hasOwnProperty("_id")){
+				delete items[i]['_id'];
 			}
-			var model = mongoxlsx.buildDynamicModel(items);
-			// Generate Excel file
-			mongoxlsx.mongoData2Xlsx(items, model, function(err, data){
-				console.log(data);
-				var fs = require('fs');
-				var new_name = collection+".xlsx";
-				console.log(new_name);
-				fs.rename(data.fileName, new_name, function(err) {
-					if ( err ) console.log('ERROR: ' + err);
-				});
-				callback(new_name);
-			});
-		}
-		else{
-			var error = {
-			status: 404
+			if(items[i].hasOwnProperty("__v")){
+				delete items[i]['__v'];
 			}
-			res.render('error', {
-				message : "Not Found",
-				error: error
-			});
 		}
-	});
+		var model = mongoxlsx.buildDynamicModel(items);
+		// Generate Excel file
+		mongoxlsx.mongoData2Xlsx(items, model, function(err, data){
+			console.log(data);
+			var fs = require('fs');
+			var new_name = collection+".xlsx";
+			console.log(new_name);
+			fs.rename(data.fileName, new_name, function(err) {
+				if ( err ) console.log('ERROR: ' + err);
+			});
+			callback(new_name);
+		});
+	}
+	else{
+		var error = {
+		status: 404
+		}
+		res.render('error', {
+			message : "Not Found",
+			error: error
+		});
+	}
 }
 
-function convert_excel(url, collection, res){
-	MongoClient.connect(url, function(err, db){
-		if(err){ return console.dir(err);}
-		convert_to_excel(db, collection, function(path){
-			console.log("Converted");
-			res.render('index', {
-				title: 'Express',
-				isReady: "excel",
-				path: path,
-			});
-			// cb();
-		});	
-	});
-}
-
-function convert_to_pdf(db, collection, res){
-	var coll = db.collection(collection);
-	coll.find().toArray(function(err, items){
-		if(err) {console.log("Not Found..........");}
-		if(items.length > 0){
-			for (var i = 0; i < items.length; i++) { 
-				if(items[i].hasOwnProperty("_id")){
-					delete items[i]['_id'];
-				}
-				if(items[i].hasOwnProperty("__v")){
-					delete items[i]['__v'];
-				}
+//Takes collection data in form of array and collection name as arguments and returns the convert pdf file path
+function convert_to_pdf(items, collection, callback){
+	
+	if(items.length > 0){
+		for (var i = 0; i < items.length; i++) { 
+			if(items[i].hasOwnProperty("_id")){
+				delete items[i]['_id'];
 			}
-			//convert here
-			// console.log(items.length);
-			keys_array = Object.keys(items[0]);
+			if(items[i].hasOwnProperty("__v")){
+				delete items[i]['__v'];
+			}
+		}
+		//convert here
+		keys_array = Object.keys(items[0]);
+		// Make it dynamically
+		var style = "<style> body{font-size: 9pt;} table, th, td { border: 1px solid black; border-collapse: collapse;} th, td { padding: 5px;} table{ width:100%;}</style>";
 
-			var bodyContent = [];
-			bodyContent.push(keys_array);
-			var new_array = [];
+		var html = "<!DOCTYPE html>\n<html>\n<head>\n" + style + "\n</head>\n<body>\n";
 
-			var html = "<!DOCTYPE html><html><head><style>	table, th, td { border: 1px solid black; border-collapse: collapse;	} th, td { padding: 5px;}</style></head><body>";
+		html = html + "<table>\n<tr>\n";
+		for(var j=0; j<keys_array.length; j++){
+			html = html + "\n<th>" + keys_array[j] + "</th>"
+		}
 
-			html = html + "<table><tr>";
+		html = html + "\n</tr>\n<tr>";
+
+		for(var i=0; i< items.length; i++){
 			for(var j=0; j<keys_array.length; j++){
-				html = html + "<th>" + keys_array[j] + "</th>"
+				html = html + "\n<td>" + items[i][keys_array[j]] + "</td>\n";
 			}
-			html = html + "</tr><tr>";
+			html = html + "</tr>\n<tr>\n";
+		}
+		html = html.slice(0,-4);
+		html = html + "</body>\n</html>";
 
-			for(var i=0; i< items.length; i++){
-				for(var j=0; j<keys_array.length; j++){
-					html = html + "<td> " + items[i][keys_array[j]] + "</td>";
-				}
-				html = html + "</tr><tr>";
+		var html_filename = collection + ".html";
+		var pdf_filename = collection + ".pdf";
+
+		fs.writeFile(html_filename, html, function(err){
+			if(err){
+				return console.log(err);
 			}
-			html = html.slice(0,-4);
-			html = html + "</body></html>";
+			console.log("File generated.");
+		});
 
-			fs.writeFile("table.html", html, function(){
-				if(err){
-					return console.log(err);
-				}
-				console.log("File generated.");
-			});
-
-			phantom.create().then(function(ph) {
-				ph.createPage().then(function(page) {
-					//do something with page
-					page.property('paperSize', {format: 'A4', margin: '.2cm'}).then(function() {
-						page.open("table.html").then(function(status) {						
-							page.render('table.pdf').then(function() {
-								console.log('Page Rendered');
-								ph.exit();
-							});						
-						});
+		//Phantom creates the pdf here using promises
+		phantom.create().then(function(ph) {
+			ph.createPage().then(function(page) {
+				//do something with page
+				page.property('paperSize', {format: 'A4', margin: '.2cm'}).then(function() {
+					page.open(html_filename).then(function(status) {						
+						page.render(pdf_filename).then(function() {
+							console.log('Page Rendered');
+							ph.exit();
+						});						
 					});
 				});
 			});
+		});
 
-			// console.log("Converted");
-			var path = "table.pdf";
-			res.render('index', {
-				title: 'Express',
-				isReady: "pdf",
-				path: path,
-			});
+		// console.log("Converted");
+		callback(pdf_filename);
+		
+	}
+	else{
+		var error = {
+		status: 404
 		}
-		else{
-			var error = {
-			status: 404
-			}
-			res.render('error', {
-				message : "Not Found",
-				error: error
+		res.render('error', {
+			message : "Not Found",
+			error: error
+		});
+	}
+}
+
+
+function convert_excel(url, collection, res){
+	MongoClient.connect(url, function(err, db){
+
+		if(err){ return console.dir(err);}
+
+		var coll = db.collection(collection);
+		coll.find().toArray(function(err, items){
+			if(err) {console.log("Not Found..........");}
+
+			convert_to_excel(items, collection, function(filename){
+				console.log("Converted");
+				res.render('index', {
+					title: 'Express',
+					isReady: "excel",
+					path: filename,
+				});
 			});
-		}
+		});
 	});
 }
+
 
 function convert_pdf(url, collection, res){
 	MongoClient.connect(url, function(err, db){
 		if(err){ return console.dir(err);}
-		convert_to_pdf(db, collection, res);	
+
+		var coll = db.collection(collection);
+		coll.find().toArray(function(err, items){
+			if(err) {console.log("Not Found..........");}
+
+			convert_to_pdf(items, collection, function(filename){
+				console.log("Converted");
+				res.render('index', {
+					title: 'Express',
+					isReady: "pdf",
+					path: filename,
+				});
+			});	
+		});
 	});
 }
 
