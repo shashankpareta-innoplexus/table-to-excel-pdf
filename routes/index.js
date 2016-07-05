@@ -80,7 +80,9 @@ function convert_to_pdf(db, collection, res){
 			bodyContent.push(keys_array);
 			var new_array = [];
 
-			var html="<table border='1' style='width:100%'><tr>";
+			var html = "<!DOCTYPE html><html><head><style>	table, th, td { border: 1px solid black; border-collapse: collapse;	} th, td { padding: 5px;}</style></head><body>";
+
+			html = html + "<table><tr>";
 			for(var j=0; j<keys_array.length; j++){
 				html = html + "<th>" + keys_array[j] + "</th>"
 			}
@@ -93,6 +95,7 @@ function convert_to_pdf(db, collection, res){
 				html = html + "</tr><tr>";
 			}
 			html = html.slice(0,-4);
+			html = html + "</body></html>";
 
 			fs.writeFile("table.html", html, function(){
 				if(err){
@@ -103,10 +106,13 @@ function convert_to_pdf(db, collection, res){
 
 			phantom.create().then(function(ph) {
 				ph.createPage().then(function(page) {
-					page.open("table.html").then(function(status) {
-						page.render('table.pdf').then(function() {
-							console.log('Page Rendered');
-							ph.exit();
+					//do something with page
+					page.property('paperSize', {format: 'A4', margin: '.2cm'}).then(function() {
+						page.open("table.html").then(function(status) {						
+							page.render('table.pdf').then(function() {
+								console.log('Page Rendered');
+								ph.exit();
+							});						
 						});
 					});
 				});
