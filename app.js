@@ -28,26 +28,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
-// Converting 
-
-//Connect to the database
-// MongoClient.connect("mongodb://localhost:27017/table_db", function(err, db){
-//   if(err){ return console.dir(err);}
-//   get_data(db, callback);
-  
-// });
-
-// function (db, callback){
-//   var collection = db.collection('dummy');
-//   collection.find().toArray(function(err, items){
-//     console.log(items[0]);
-//     //convert here
-//   });
-// }
-
-// app.get('')
-
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

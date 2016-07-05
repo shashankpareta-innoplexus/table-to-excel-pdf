@@ -3,13 +3,11 @@
 <head>
 	<meta charset='utf-8'>
 	<title>Converter</title>
-	<script src='pdfmake.min.js'></script>
-	<script src='vfs_fonts.js'></script>
 </head>
 <body>
 
 <h1>Welcome</h1>
-<p class="lead">Convert your database into excel files.</p>
+<p class="lead">Convert your database into excel and pdf files.</p>
 
 <div id="center-div">
   <form action="/convert" method="POST">
@@ -24,48 +22,23 @@
     <br>
 
     <input type="submit" class="btn btn-primary" name="button" value="Convert To Excel File">
-    <input type="submit" class="btn btn-primary" name="button" value="Convert To PDF File" onclick="createPdf()">
+    <input type="submit" class="btn btn-primary" name="button" value="Convert To PDF File"">
   </form>
 </div>
-
+<br>
 <div>
 <% if(isReady=="excel") {%>
 <a href="/download/<%=path%>">Download Excel File</a>
-<br>
+<br><br>
 <a href="/">Convert Another File</a>
 <% } %>
 <% if(isReady=="pdf") {%>
 <a href="/download/<%=path%>">Download PDF File</a>
-<br>
+<br><br>
 <a href="/">Convert Another File</a>
 <% } %>
 </div>
 
-<script  type="text/javascript">
-	function createPdf(){
-	console.log("kya bhai kya ho raha hai..");
-	var docDefinition = {
-		content: [
-			{
-			table: {
-				headerRows: 1,
-				// widths: [ '*', 'auto', '100', '*' ],
-				body: [
-		          [ 'First', 'Second', 'Third', 'The last one' ],
-		          [ 'Value 1', 'Value 2', 'Value 3', 'Value 4' ],
-		          [ { text: 'Bold value', bold: true }, 'Val 2', 'Val 3', 'Val 4' ]
-		        ]
-				}
-			}
-		]
-	};
-	// var printer = new pdfMake({ Roboto: { normal: 'citycontrasts.ttf' } });
-	// var pdfDoc = printer.createPdfKitDocument(docDefinition);
-	// pdfDoc.open();
-	pdfMake.createPdf(docDefinition).download();
-	}
-
-</script>
 
 </body>
 </html>
