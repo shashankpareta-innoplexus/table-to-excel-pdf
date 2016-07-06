@@ -16,21 +16,16 @@ convert_tables.js file has two functions which generate the files in excel and p
   - Array of documents of a given collection
   - collection name (the generated file will be of this name + .pdf or .xlsx)
   - callback
-  - Example for converting into excel format: 
-
-    ```
-     convert_to_excel(items, collection_name, function(file_name){
-         /*Do something with filename*/
-     });
-     ```
-  - Example for converting into pdf format:
-
-    ```
-     convert_to_pdf(items, collection_name, function(file_name){
-         /*Do something with filename*/
-     });
-     ```
 
 ##### Usage
-Use require for importing this file in your file and use the above mentioned functions
-
+Use require for importing this file in your file and use the above mentioned functions.
+For Example: 
+```
+ var convert_tables = require('convert_tables');
+ convert_tables.convert_to_excel(items, collection_name, function(file_name){
+     /*Do something with filename*/
+ });
+ convert_tables.convert_to_pdf(items, collection_name, function(file_name){
+     /*Do something with filename*/
+ });
+```
