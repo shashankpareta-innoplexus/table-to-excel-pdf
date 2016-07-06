@@ -7,13 +7,12 @@ var mongoxlsx = require('mongo-xlsx');
 var phantom = require('phantom');
 var fs = require('fs');
 
-
-
 //Take collection name and collection in form of array as argumnets and convert that array in excel files
 
 var convert_to_excel = function(items, collection, callback){
-
+	
 	if(items.length > 0){
+		// Removes the _id and __v keys
 		for (var i = 0; i < items.length; i++) { 
 			if(items[i].hasOwnProperty("_id")){
 				delete items[i]['_id'];
@@ -22,19 +21,22 @@ var convert_to_excel = function(items, collection, callback){
 				delete items[i]['__v'];
 			}
 		}
+		//Starts generating
 		var model = mongoxlsx.buildDynamicModel(items);
 		// Generate Excel file
 		mongoxlsx.mongoData2Xlsx(items, model, function(err, data){
+			//data contains the path and filename
 			console.log(data);
-			var fs = require('fs');
-			var new_name = collection+".xlsx";
+			var new_name = collection + ".xlsx";
 			console.log(new_name);
 			fs.rename(data.fileName, new_name, function(err) {
 				if ( err ) console.log('ERROR: ' + err);
 			});
+			// sends the file name of generated file name
 			callback(new_name);
 		});
 	}
+	//if db is empty returns error
 	else{
 		var error = {
 		status: 404
@@ -50,6 +52,7 @@ var convert_to_excel = function(items, collection, callback){
 var convert_to_pdf = function(items, collection, callback){
 	
 	if(items.length > 0){
+		// Removes the _id and __v keys
 		for (var i = 0; i < items.length; i++) { 
 			if(items[i].hasOwnProperty("_id")){
 				delete items[i]['_id'];
@@ -60,7 +63,7 @@ var convert_to_pdf = function(items, collection, callback){
 		}
 		//convert here
 		keys_array = Object.keys(items[0]);
-		// Make it dynamically
+		// Generating the html file which contains table
 		var style = "<style> body{font-size: 9pt;} table, th, td { border: 1px solid black; border-collapse: collapse;} th, td { padding: 5px;} table{ width:100%;}</style>";
 
 		var html = "<!DOCTYPE html><html><head>"+ style +"</head>";
@@ -109,10 +112,11 @@ var convert_to_pdf = function(items, collection, callback){
 			});
 		});
 
-		// console.log("Converted");
+		// Sends the filename
 		callback(pdf_filename);
 		
 	}
+	// If db is empty returns the error
 	else{
 		var error = {
 		status: 404
@@ -124,6 +128,7 @@ var convert_to_pdf = function(items, collection, callback){
 	}
 }
 
+// Use these names of the functions for using them
 module.exports = {
   convert_to_pdf: convert_to_pdf,
   convert_to_excel: convert_to_excel
