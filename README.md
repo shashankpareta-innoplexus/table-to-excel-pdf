@@ -4,7 +4,7 @@
 1.0.0
 
 ### Overview
-Index.js file has two functions which generate the files in excel and pdf formats and return their name.
+convert_tables.js file has two functions which generate the files in excel and pdf formats and return their name.
 
 ##### Required npm modules :
   - mongodb (database driver, could be something else
